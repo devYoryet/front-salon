@@ -49,15 +49,18 @@ export const loginUser = (userData) => async (dispatch) => {
       userData.data
     );
     const user = response.data;
+    
+    // La estructura correcta del backend
     if (user.data?.jwt) {
       localStorage.setItem("jwt", user.data.jwt);
-      if (user.data?.role === "ROLE_ADMIN") {
+      
+      // Redirección basada en rol
+      if (user.data?.role === "ADMIN") {
         userData.navigate("/admin");
-      } else if (user.data?.role === "ROLE_SALON_OWNER") {
+      } else if (user.data?.role === "SALON_OWNER") {
         userData.navigate("/salon-dashboard");
-      }
-      else{
-        userData.navigate("/");
+      } else {
+        userData.navigate("/"); // Para CUSTOMER
       }
     }
 

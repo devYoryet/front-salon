@@ -4,11 +4,6 @@ import * as Yup from "yup";
 import {
   TextField,
   Button,
-  MenuItem,
-  Select,
-  InputLabel,
-  FormControl,
-  FormHelperText,
   CircularProgress,
   IconButton,
   Snackbar,
@@ -18,52 +13,52 @@ import {
 import "tailwindcss/tailwind.css";
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 import CloseIcon from "@mui/icons-material/Close";
-
 import { useDispatch, useSelector } from "react-redux";
 import { getCategoriesBySalon } from "../../../Redux/Category/action";
 import {
-  createServiceAction,
   fetchServiceById,
   updateService,
 } from "../../../Redux/Salon Services/action";
-import { fetchSalonById } from "../../../Redux/Salon/action";
 import { useParams } from "react-router-dom";
 import { uploadToCloudinary } from "../../../util/uploadToCloudnary";
 
-const UpdateServiceForm = ({onClose}) => {
+const UpdateServiceForm = ({ onClose }) => {
   const [uploadImage, setUploadingImage] = useState(false);
-
   const [snackbarOpen, setOpenSnackbar] = useState(false);
+  
   const dispatch = useDispatch();
-  const { category, salon, service } = useSelector((store) => store);
+  const { salon, service } = useSelector((store) => store);
   const { id } = useParams();
+  
   const formik = useFormik({
     initialValues: {
       name: "",
       description: "",
       price: "",
       duration: "",
-
       image: "",
       category: "",
     },
-    // validationSchema: validationSchema,
     onSubmit: (values) => {
       console.log(values);
-      dispatch(updateService({id,service:values}))
+      dispatch(updateService({ id, service: values }));
       onClose();
     },
   });
 
   const handleImageChange = async (event) => {
     const file = event.target.files[0];
-
     setUploadingImage(true);
-    const image = await uploadToCloudinary(file);
-    // const image = URL.createObjectURL(file);
-    console.log("uploaded images : ", image);
-    formik.setFieldValue("image", image);
-    setUploadingImage(false);
+    
+    try {
+      const image = await uploadToCloudinary(file);
+      console.log("uploaded images : ", image);
+      formik.setFieldValue("image", image);
+    } catch (error) {
+      console.error("Error uploading image:", error);
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
   const handleRemoveImage = () => {
@@ -75,8 +70,10 @@ const UpdateServiceForm = ({onClose}) => {
   };
 
   useEffect(() => {
-    dispatch(fetchServiceById(id));
-  }, [id]);
+    if (id) {
+      dispatch(fetchServiceById(id));
+    }
+  }, [id, dispatch]);
 
   useEffect(() => {
     if (salon.salon) {
@@ -87,34 +84,33 @@ const UpdateServiceForm = ({onClose}) => {
         })
       );
     }
-  }, [salon.salon]);
+  }, [salon.salon, dispatch]);
 
   useEffect(() => {
     if (service.service) {
-      formik.setFieldValue("category", service.service.category?.name);
-      formik.setFieldValue("name", service.service.name);
-      formik.setFieldValue("description", service.service.description);
-      formik.setFieldValue("price", service.service.price);
-      formik.setFieldValue("duration", service.service.duration);
-      formik.setFieldValue("image", service.service.image);
+      formik.setFieldValue("category", service.service.category?.name || "");
+      formik.setFieldValue("name", service.service.name || "");
+      formik.setFieldValue("description", service.service.description || "");
+      formik.setFieldValue("price", service.service.price || "");
+      formik.setFieldValue("duration", service.service.duration || "");
+      formik.setFieldValue("image", service.service.image || "");
     }
   }, [service.service]);
 
   return (
     <div className="flex justify-center items-center">
-      <form onSubmit={formik.handleSubmit} className="space-y-4 p-4 w-full ">
+      <form onSubmit={formik.handleSubmit} className="space-y-4 p-4 w-full">
         <Grid2 container spacing={2}>
           <Grid2 className="w-24 h-24" size={{ xs: 12 }}>
             {formik.values.image ? (
-              <div className="relative border ">
+              <div className="relative border">
                 <img
                   className="w-24 h-24 object-cover"
                   src={formik.values.image}
-                  alt={`Service-Image `}
+                  alt="Service"
                 />
                 <IconButton
                   onClick={handleRemoveImage}
-                  className=""
                   size="small"
                   color="error"
                   sx={{
@@ -136,7 +132,6 @@ const UpdateServiceForm = ({onClose}) => {
                   style={{ display: "none" }}
                   onChange={handleImageChange}
                 />
-
                 <label className="relative" htmlFor="fileInput">
                   <span className="w-24 h-24 cursor-pointer flex items-center justify-center p-3 border rounded-md border-gray-400">
                     <AddPhotoAlternateIcon className="text-gray-700" />
@@ -150,12 +145,13 @@ const UpdateServiceForm = ({onClose}) => {
               </>
             )}
           </Grid2>
+          
           <Grid2 size={{ xs: 12, sm: 12 }}>
             <TextField
               fullWidth
               id="name"
               name="name"
-              label="name"
+              label="Name"
               value={formik.values.name}
               onChange={formik.handleChange}
               error={formik.touched.name && Boolean(formik.errors.name)}
@@ -163,7 +159,8 @@ const UpdateServiceForm = ({onClose}) => {
               required
             />
           </Grid2>
-          <Grid2 size={{ xs: 12, sm: 12 }} xs={12}>
+          
+          <Grid2 size={{ xs: 12, sm: 12 }}>
             <TextField
               multiline
               rows={4}
@@ -182,6 +179,7 @@ const UpdateServiceForm = ({onClose}) => {
               required
             />
           </Grid2>
+          
           <Grid2 size={{ xs: 12, sm: 6 }}>
             <TextField
               fullWidth
@@ -196,12 +194,13 @@ const UpdateServiceForm = ({onClose}) => {
               required
             />
           </Grid2>
+          
           <Grid2 size={{ xs: 12, sm: 6 }}>
             <TextField
               fullWidth
               id="duration"
               name="duration"
-              label="Duration"
+              label="Duration (minutes)"
               type="number"
               value={formik.values.duration}
               onChange={formik.handleChange}
@@ -210,8 +209,6 @@ const UpdateServiceForm = ({onClose}) => {
               required
             />
           </Grid2>
-
-         
 
           <Grid2 size={12}>
             <Button
@@ -225,6 +222,7 @@ const UpdateServiceForm = ({onClose}) => {
           </Grid2>
         </Grid2>
       </form>
+      
       <Snackbar
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
         open={snackbarOpen}
@@ -233,11 +231,11 @@ const UpdateServiceForm = ({onClose}) => {
       >
         <Alert
           onClose={handleCloseSnackbar}
-          severity={false ? "error" : "success"}
+          severity="success"
           variant="filled"
           sx={{ width: "100%" }}
         >
-          {"Service updated successfully"}
+          Service updated successfully
         </Alert>
       </Snackbar>
     </div>
