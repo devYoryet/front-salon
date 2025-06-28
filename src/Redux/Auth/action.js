@@ -1,3 +1,4 @@
+// src/Redux/Auth/action.js
 import axios from "axios";
 import {
   REGISTER_REQUEST,
@@ -10,107 +11,92 @@ import {
   GET_USER_SUCCESS,
   GET_USER_FAILURE,
   LOGOUT,
-  GET_ALL_CUSTOMERS_REQUEST,
-  GET_ALL_CUSTOMERS_SUCCESS,
-  GET_ALL_CUSTOMERS_FAILURE,
 } from "./actionTypes";
 import api, { API_BASE_URL } from "../../config/api";
 
 export const registerUser = (userData) => async (dispatch) => {
   dispatch({ type: REGISTER_REQUEST });
-  console.log("auth action - ",userData)
+  console.log("auth action - ", userData);
+  
   try {
     const response = await axios.post(
       `${API_BASE_URL}/auth/signup`,
       userData.userData
     );
+    
+    console.log("register response:", response.data);
+    
+    // Ajustar según la estructura de respuesta del backend
     const user = response.data;
-    if (user.data?.jwt) {
+    if (user.success && user.data?.jwt) {
       localStorage.setItem("jwt", user.data.jwt);
       userData.navigate("/");
     }
-    console.log("registerr :- ", user);
+    
     dispatch({ type: REGISTER_SUCCESS, payload: user });
   } catch (error) {
-    console.log("error ", error);
-    dispatch({ type: REGISTER_FAILURE, payload: error });
+    console.log("register error:", error);
+    dispatch({ type: REGISTER_FAILURE, payload: error.response?.data || error.message });
   }
 };
 
-// Login action creators
-const loginRequest = () => ({ type: LOGIN_REQUEST });
-const loginSuccess = (user) => ({ type: LOGIN_SUCCESS, payload: user });
-
 export const loginUser = (userData) => async (dispatch) => {
-  dispatch(loginRequest());
+  dispatch({ type: LOGIN_REQUEST });
+  
   try {
     const response = await axios.post(
       `${API_BASE_URL}/auth/login`,
       userData.data
     );
+    
+    console.log("login response:", response.data);
+    
     const user = response.data;
     
-    // La estructura correcta del backend
-    if (user.data?.jwt) {
+    // Ajustar según la estructura real del backend
+    if (user.success && user.data?.jwt) {
       localStorage.setItem("jwt", user.data.jwt);
       
       // Redirección basada en rol
-      if (user.data?.role === "ADMIN") {
+      if (user.data.role === "ADMIN") {
         userData.navigate("/admin");
-      } else if (user.data?.role === "SALON_OWNER") {
+      } else if (user.data.role === "SALON_OWNER") {
         userData.navigate("/salon-dashboard");
       } else {
-        userData.navigate("/"); // Para CUSTOMER
+        userData.navigate("/");
       }
     }
 
-    console.log("login ", user);
-    dispatch(loginSuccess(user));
+    dispatch({ type: LOGIN_SUCCESS, payload: user });
   } catch (error) {
-    console.log("error ", error);
-    dispatch({ type: LOGIN_FAILURE, payload: error });
+    console.log("login error:", error);
+    dispatch({ type: LOGIN_FAILURE, payload: error.response?.data || error.message });
   }
 };
 
-//  get user from token
-export const getAllCustomers = (token) => {
-  return async (dispatch) => {
-    console.log("jwt - ", token);
-    dispatch({ type: GET_ALL_CUSTOMERS_REQUEST });
-    try {
-      const response = await axios.get(`${API_BASE_URL}/api/admin/users`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const users = response.data;
-      dispatch({ type: GET_ALL_CUSTOMERS_SUCCESS, payload: users });
-      console.log("All Customers", users);
-    } catch (error) {
-      const errorMessage = error.message;
-      console.log(error);
-      dispatch({ type: GET_ALL_CUSTOMERS_FAILURE, payload: errorMessage });
+export const getUser = (token) => async (dispatch) => {
+  if (!token) return;
+  
+  dispatch({ type: GET_USER_REQUEST });
+  
+  try {
+    const response = await api.get(`/api/users/profile`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    
+    console.log("get user response:", response.data);
+    const user = response.data;
+    dispatch({ type: GET_USER_SUCCESS, payload: user });
+  } catch (error) {
+    console.log("get user error:", error);
+    dispatch({ type: GET_USER_FAILURE, payload: error.response?.data || error.message });
+    // Si el token es inválido, limpiar el localStorage
+    if (error.response?.status === 401 || error.response?.status === 400) {
+      localStorage.removeItem("jwt");
     }
-  };
-};
-
-export const getUser = (token) => {
-  return async (dispatch) => {
-    dispatch({ type: GET_USER_REQUEST });
-    try {
-      const response = await api.get(`/api/users/profile`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const user = response.data;
-      dispatch({ type: GET_USER_SUCCESS, payload: user });
-      console.log("req User ", user);
-    } catch (error) {
-      const errorMessage = error.message;
-      dispatch({ type: GET_USER_FAILURE, payload: errorMessage });
-    }
-  };
+  }
 };
 
 export const logout = () => {

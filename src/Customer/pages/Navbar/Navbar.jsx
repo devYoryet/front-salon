@@ -12,13 +12,13 @@ import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../../Redux/Auth/action";
 import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
-import useNotificationWebsoket from "../../../util/useNotificationWebsoket";
-import { fetchNotificationsByUser } from "../../../Redux/Notifications/action";
 import { useTheme } from "@emotion/react";
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const { auth, notification } = useSelector((store) => store);
+  // Selector específico para evitar warnings
+  const auth = useSelector((store) => store.auth);
+  const notification = useSelector((store) => store.notification);
   const dispatch = useDispatch();
   const theme = useTheme();
 
@@ -28,6 +28,7 @@ const Navbar = () => {
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
+  
   const handleClose = () => {
     setAnchorEl(null);
   };
@@ -43,18 +44,21 @@ const Navbar = () => {
     handleClose();
   };
 
+  // Solo cargar notificaciones si hay usuario autenticado
   useEffect(() => {
     if (auth.user?.id) {
-      dispatch(
-        fetchNotificationsByUser({
-          userId: auth.user.id,
-          jwt: localStorage.getItem("jwt"),
-        })
-      );
+      // Comentar temporalmente hasta arreglar las notificaciones
+      // dispatch(
+      //   fetchNotificationsByUser({
+      //     userId: auth.user.id,
+      //     jwt: localStorage.getItem("jwt"),
+      //   })
+      // );
     }
   }, [auth.user]);
 
-  useNotificationWebsoket(auth.user?.id, "user");
+  // Comentar temporalmente el WebSocket
+  // useNotificationWebsoket(auth.user?.id, "user");
 
   return (
     <div className="z-50 px-6 flex items-center justify-between py-2 fixed top-0 left-0 right-0 bg-white shadow-md">
@@ -82,7 +86,7 @@ const Navbar = () => {
         </Button>
 
         <IconButton onClick={() => navigate("/notifications")}>
-          <Badge badgeContent={notification.unreadCount} color="secondary">
+          <Badge badgeContent={notification?.unreadCount || 0} color="secondary">
             <NotificationsActiveIcon color="primary" />
           </Badge>
         </IconButton>
@@ -90,7 +94,7 @@ const Navbar = () => {
         {auth.user?.id ? (
           <div className="flex gap-1 items-center">
             <h1 className="text-lg font-semibold hidden lg:block">
-              {auth.user?.fullName}
+              {auth.user?.fullName || 'Usuario'}
             </h1>
 
             <IconButton
@@ -101,7 +105,7 @@ const Navbar = () => {
               onClick={handleClick}
             >
               <Avatar sx={{ bgcolor: theme.palette.primary.main }}>
-                {auth.user?.fullName?.[0]?.toUpperCase()}
+                {auth.user?.fullName?.[0]?.toUpperCase() || 'U'}
               </Avatar>
             </IconButton>
 
@@ -120,6 +124,11 @@ const Navbar = () => {
               {auth.user?.role === "SALON_OWNER" && (
                 <MenuItem onClick={handleMenuClick("/salon-dashboard")}>
                   Panel de Salón
+                </MenuItem>
+              )}
+              {auth.user?.role === "ADMIN" && (
+                <MenuItem onClick={handleMenuClick("/admin")}>
+                  Panel de Admin
                 </MenuItem>
               )}
               <MenuItem onClick={handleMenuClick("/logout")}>Cerrar Sesión</MenuItem>

@@ -7,12 +7,12 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchSalons } from "../../../Redux/Salon/action";
 
 const Home = () => {
-  const { salon } = useSelector((store) => store);
+  const salon = useSelector((store) => store.salon);
   const dispatch = useDispatch();
 
   useEffect(() => {
     dispatch(fetchSalons());
-  }, []);
+  }, [dispatch]);
 
   return (
     <div className="space-y-20">
@@ -35,28 +35,28 @@ const Home = () => {
         <div className="w-full lg:w-1/2 border grid gap-3 grid-cols-2 grid-rows-12 h-[45vh] md:h-[90vh]">
           <div className="row-span-7">
             <img
-              className="h-full w-full rounded-md"
+              className="h-full w-full rounded-md object-cover"
               src="https://images.pexels.com/photos/3998415/pexels-photo-3998415.jpeg?auto=compress&cs=tinysrgb&w=600"
               alt="Barbería"
             />
           </div>
           <div className="row-span-5">
             <img
-              className="h-full w-full rounded-md"
+              className="h-full w-full rounded-md object-cover"
               src="https://images.pexels.com/photos/3331488/pexels-photo-3331488.jpeg?auto=compress&cs=tinysrgb&w=600"
               alt="Peluquería"
             />
           </div>
           <div className="row-span-7">
             <img
-              className="h-full w-full rounded-md"
+              className="h-full w-full rounded-md object-cover"
               src="https://images.pexels.com/photos/5069455/pexels-photo-5069455.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
               alt="Masajes"
             />
           </div>
           <div className="row-span-5">
             <img
-              className="h-full w-full rounded-md"
+              className="h-full w-full rounded-md object-cover"
               src="https://images.pexels.com/photos/3757952/pexels-photo-3757952.jpeg?auto=compress&cs=tinysrgb&w=600"
               alt="Manicure"
             />
@@ -68,7 +68,13 @@ const Home = () => {
         <h1 className="text-3xl font-bold pb-10">
           Reserva tu salón favorito hoy mismo
         </h1>
-        <SalonList salons={salon.salons} />
+        {salon.loading ? (
+          <div className="flex justify-center">
+            <p>Cargando salones...</p>
+          </div>
+        ) : (
+          <SalonList salons={salon.salons || []} />
+        )}
       </section>
     </div>
   );

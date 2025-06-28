@@ -1,3 +1,4 @@
+// src/Redux/Notifications/action.js (actualizado)
 import axios from "axios";
 import {
   FETCH_NOTIFICATIONS_REQUEST,
@@ -22,87 +23,81 @@ import {
 } from "./actionTypes";
 import api from "../../config/api";
 
-// Helper function for handling requests
 const API_URL = "/api/notifications";
 
-// Fetch all notifications
-export const fetchNotifications = () => async (dispatch) => {
-  dispatch({ type: FETCH_NOTIFICATIONS_REQUEST });
-  try {
-    const response = await api.get(`${API_URL}`);
-    dispatch({ type: FETCH_NOTIFICATIONS_SUCCESS, payload: response.data });
-  } catch (error) {
-    dispatch({ type: FETCH_NOTIFICATIONS_FAILURE, payload: error.message });
-  }
-};
-
 // Fetch notifications by user ID
-export const fetchNotificationsByUser = ({userId,jwt}) => async (dispatch) => {
+export const fetchNotificationsByUser = ({userId, jwt}) => async (dispatch) => {
   dispatch({ type: FETCH_NOTIFICATIONS_BY_USER_REQUEST });
   try {
-    const response = await api.get(`${API_URL}/user/${userId}`,
-      {
-        headers: { Authorization: `Bearer ${jwt}` },
-        
-      }
-    );
-    console.log("fetch notifications", response.data)
+    const response = await api.get(`${API_URL}/user/${userId}`, {
+      headers: { Authorization: `Bearer ${jwt}` },
+    });
+    console.log("fetch notifications", response.data);
     dispatch({ type: FETCH_NOTIFICATIONS_BY_USER_SUCCESS, payload: response.data });
   } catch (error) {
-    console.log("error fetching notifications",error)
+    console.log("error fetching notifications", error);
     dispatch({ type: FETCH_NOTIFICATIONS_BY_USER_FAILURE, payload: error.message });
   }
 };
 
 // Fetch notifications by salon ID
-export const fetchNotificationsBySalon = ({salonId,jwt}) => async (dispatch) => {
+export const fetchNotificationsBySalon = ({salonId, jwt}) => async (dispatch) => {
   dispatch({ type: FETCH_NOTIFICATIONS_BY_SALON_REQUEST });
   try {
-    const response = await api.get(`${API_URL}/salon-owner/salon/${salonId}`,
-      {
-        headers: { Authorization: `Bearer ${jwt}` },
-        
-      }
-    );
-    console.log("fetch salon notifications", response.data)
+    const response = await api.get(`${API_URL}/salon/${salonId}`, {
+      headers: { Authorization: `Bearer ${jwt}` },
+    });
+    console.log("fetch salon notifications", response.data);
     dispatch({ type: FETCH_NOTIFICATIONS_BY_SALON_SUCCESS, payload: response.data });
   } catch (error) {
+    console.log("error fetching salon notifications", error);
     dispatch({ type: FETCH_NOTIFICATIONS_BY_SALON_FAILURE, payload: error.message });
   }
 };
 
-
-
 // Mark notification as read
-export const markNotificationAsRead = ({notificationId,jwt}) => async (dispatch) => {
+export const markNotificationAsRead = ({notificationId, jwt}) => async (dispatch) => {
   dispatch({ type: MARK_NOTIFICATION_AS_READ_REQUEST });
   try {
-    const response = await api.put(`${API_URL}/${notificationId}/read`,{},{
+    const response = await api.put(`${API_URL}/${notificationId}/read`, {}, {
       headers: { Authorization: `Bearer ${jwt}` },
-      
     });
-    console.log("mark notification as read", response.data)
+    console.log("mark notification as read", response.data);
     dispatch({ type: MARK_NOTIFICATION_AS_READ_SUCCESS, payload: response.data });
   } catch (error) {
-    console.log("mark notification as read error - ", error)
+    console.log("mark notification as read error - ", error);
     dispatch({ type: MARK_NOTIFICATION_AS_READ_FAILURE, payload: error.message });
   }
 };
 
 // Delete a notification
-export const deleteNotification = (notificationId) => async (dispatch) => {
+export const deleteNotification = (notificationId, jwt) => async (dispatch) => {
   dispatch({ type: DELETE_NOTIFICATION_REQUEST });
   try {
-    await api.delete(`${API_URL}/${notificationId}`);
+    await api.delete(`${API_URL}/${notificationId}`, {
+      headers: { Authorization: `Bearer ${jwt}` },
+    });
     dispatch({ type: DELETE_NOTIFICATION_SUCCESS, payload: notificationId });
   } catch (error) {
     dispatch({ type: DELETE_NOTIFICATION_FAILURE, payload: error.message });
   }
 };
 
-export const addNotification = (notification) => {
-    return {
-      type: ADD_NOTIFICATION,
-      payload: notification,
-    };
-  };
+// Create notification
+export const createNotification = (notificationData, jwt) => async (dispatch) => {
+  dispatch({ type: CREATE_NOTIFICATION_REQUEST });
+  try {
+    const response = await api.post(API_URL, notificationData, {
+      headers: { Authorization: `Bearer ${jwt}` },
+    });
+    dispatch({ type: CREATE_NOTIFICATION_SUCCESS, payload: response.data });
+  } catch (error) {
+    dispatch({ type: CREATE_NOTIFICATION_FAILURE, payload: error.message });
+  }
+};
+
+// Add notification (for WebSocket)
+export const addNotification = (notification) => ({
+  type: ADD_NOTIFICATION,
+  payload: notification,
+});
