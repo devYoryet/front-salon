@@ -4,7 +4,7 @@ rm -rf node_modules package-lock.json
 npm install
 npm remove @babel/plugin-proposal-private-property-in-object
 npm install --save-dev @babel/plugin-transform-private-property-in-object
-
+npm install @stomp/stompjs sockjs-client 
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).

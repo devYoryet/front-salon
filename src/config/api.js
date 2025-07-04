@@ -1,7 +1,7 @@
 
 import axios from 'axios';
 // const DEPLOYED=''
-const LOCALHOST = 'http://localhost:8081'  // Cambiar puerto
+const LOCALHOST='http://localhost:5000'
 
 export const API_BASE_URL = LOCALHOST
 

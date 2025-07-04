@@ -12,11 +12,13 @@ import {
   GET_USER_FAILURE,
   LOGOUT,
 } from "./actionTypes";
-import api, { API_BASE_URL } from "../../config/api";
+
+// USAR GATEWAY COMO PUNTO DE ENTRADA
+const API_BASE_URL = 'http://localhost:5000';
 
 export const registerUser = (userData) => async (dispatch) => {
   dispatch({ type: REGISTER_REQUEST });
-  console.log("auth action - ", userData);
+  console.log("auth action - register", userData);
   
   try {
     const response = await axios.post(
@@ -26,22 +28,33 @@ export const registerUser = (userData) => async (dispatch) => {
     
     console.log("register response:", response.data);
     
-    // Ajustar según la estructura de respuesta del backend
-    const user = response.data;
-    if (user.success && user.data?.jwt) {
-      localStorage.setItem("jwt", user.data.jwt);
-      userData.navigate("/");
+    // Estructura esperada: { success: true, message: "...", data: { jwt: "...", role: "..." } }
+    const responseData = response.data;
+    
+    if (responseData.success && responseData.data?.jwt) {
+      localStorage.setItem("jwt", responseData.data.jwt);
+      
+      // Redirección basada en rol
+      if (responseData.data.role === "ADMIN") {
+        userData.navigate("/admin");
+      } else if (responseData.data.role === "SALON_OWNER") {
+        userData.navigate("/salon-dashboard");
+      } else {
+        userData.navigate("/");
+      }
     }
     
-    dispatch({ type: REGISTER_SUCCESS, payload: user });
+    dispatch({ type: REGISTER_SUCCESS, payload: responseData });
   } catch (error) {
     console.log("register error:", error);
-    dispatch({ type: REGISTER_FAILURE, payload: error.response?.data || error.message });
+    const errorMessage = error.response?.data?.message || error.message;
+    dispatch({ type: REGISTER_FAILURE, payload: errorMessage });
   }
 };
 
 export const loginUser = (userData) => async (dispatch) => {
   dispatch({ type: LOGIN_REQUEST });
+  console.log("auth action - login", userData);
   
   try {
     const response = await axios.post(
@@ -51,26 +64,27 @@ export const loginUser = (userData) => async (dispatch) => {
     
     console.log("login response:", response.data);
     
-    const user = response.data;
+    // Estructura esperada: { success: true, message: "...", data: { jwt: "...", role: "..." } }
+    const responseData = response.data;
     
-    // Ajustar según la estructura real del backend
-    if (user.success && user.data?.jwt) {
-      localStorage.setItem("jwt", user.data.jwt);
+    if (responseData.success && responseData.data?.jwt) {
+      localStorage.setItem("jwt", responseData.data.jwt);
       
       // Redirección basada en rol
-      if (user.data.role === "ADMIN") {
+      if (responseData.data.role === "ADMIN") {
         userData.navigate("/admin");
-      } else if (user.data.role === "SALON_OWNER") {
+      } else if (responseData.data.role === "SALON_OWNER") {
         userData.navigate("/salon-dashboard");
       } else {
         userData.navigate("/");
       }
     }
 
-    dispatch({ type: LOGIN_SUCCESS, payload: user });
+    dispatch({ type: LOGIN_SUCCESS, payload: responseData });
   } catch (error) {
     console.log("login error:", error);
-    dispatch({ type: LOGIN_FAILURE, payload: error.response?.data || error.message });
+    const errorMessage = error.response?.data?.message || error.message;
+    dispatch({ type: LOGIN_FAILURE, payload: errorMessage });
   }
 };
 
@@ -80,7 +94,7 @@ export const getUser = (token) => async (dispatch) => {
   dispatch({ type: GET_USER_REQUEST });
   
   try {
-    const response = await api.get(`/api/users/profile`, {
+    const response = await axios.get(`${API_BASE_URL}/api/users/profile`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -91,9 +105,10 @@ export const getUser = (token) => async (dispatch) => {
     dispatch({ type: GET_USER_SUCCESS, payload: user });
   } catch (error) {
     console.log("get user error:", error);
-    dispatch({ type: GET_USER_FAILURE, payload: error.response?.data || error.message });
+    dispatch({ type: GET_USER_FAILURE, payload: error.response?.data?.message || error.message });
+    
     // Si el token es inválido, limpiar el localStorage
-    if (error.response?.status === 401 || error.response?.status === 400) {
+    if (error.response?.status === 401 || error.response?.status === 403) {
       localStorage.removeItem("jwt");
     }
   }
@@ -104,4 +119,4 @@ export const logout = () => {
     dispatch({ type: LOGOUT });
     localStorage.clear();
   };
-};
+};  
