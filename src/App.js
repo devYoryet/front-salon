@@ -6,7 +6,7 @@ import SalonDashboard from "./salon/pages/SellerDashboard/SalonDashboard";
 import Auth from "./Auth/Auth";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getUser } from "./Redux/Auth/action";
+import { getUserProfile } from "./Redux/Auth/action"; // ✅ CAMBIO: getUser -> getUserProfile
 import BecomePartner from "./salon/pages/Become Partner/BecomePartnerForm";
 import CustomerRoutes from "./routes/CustomerRoutes";
 import AdminRoutes from "./routes/AdminRoutes";
@@ -21,7 +21,7 @@ function App() {
   useEffect(() => {
     const token = auth.jwt || localStorage.getItem("jwt");
     if (token) {
-      dispatch(getUser(token));
+      dispatch(getUserProfile()); // ✅ CAMBIO: getUser(token) -> getUserProfile()
     }
   }, [auth.jwt, dispatch]);
 

@@ -12,6 +12,8 @@ import {
 import { Backdrop, CircularProgress } from "@mui/material";
 // import { LineChart, Line } from 'recharts';
 const BookingCharts = () => {
+  const booking = useSelector((store) => store.booking); // ✅ Específico
+
   const dispatch = useDispatch();
   const { chart } = useSelector((store) => store);
   useEffect(() => {

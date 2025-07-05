@@ -17,8 +17,8 @@ import { useTheme } from "@emotion/react";
 const Navbar = () => {
   const navigate = useNavigate();
   // Selector específico para evitar warnings
-  const auth = useSelector((store) => store.auth);
-  const notification = useSelector((store) => store.notification);
+  const auth = useSelector((store) => store.auth); // ✅ Específico
+  const notification = useSelector((store) => store.notification); // ✅ Específico
   const dispatch = useDispatch();
   const theme = useTheme();
 

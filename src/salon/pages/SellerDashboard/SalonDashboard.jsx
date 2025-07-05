@@ -8,7 +8,7 @@ import { getSalonReport } from "../../../Redux/Booking/action";
 
 const SalonDashboard = () => {
   const dispatch = useDispatch();
-  const { auth } = useSelector((store) => store);
+  const auth = useSelector((store) => store.auth); // ✅ Específico
 
   useEffect(() => {
     const jwt = localStorage.getItem("jwt");
@@ -18,11 +18,9 @@ const SalonDashboard = () => {
     }
   }, [dispatch]);
 
-  // Verificar autenticación
   useEffect(() => {
     const jwt = localStorage.getItem("jwt");
     if (!jwt || !auth.user) {
-      // Si no hay token o usuario, redirigir al login
       window.location.href = "/login";
     }
   }, [auth.user]);

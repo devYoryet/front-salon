@@ -13,6 +13,8 @@ import { Backdrop, CircularProgress } from "@mui/material";
 // import { LineChart, Line } from 'recharts';
 const data = [{ name: "Page A", uv: 400, pv: 2400, amt: 2400 }];
 const EarningCharts = () => {
+  const booking = useSelector((store) => store.booking); // ✅ Específico
+
   const dispatch = useDispatch();
   const { chart } = useSelector((store) => store);
   useEffect(() => {

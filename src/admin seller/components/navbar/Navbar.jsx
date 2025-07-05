@@ -10,9 +10,10 @@ import useNotificationWebsoket from "../../../util/useNotificationWebsoket";
 const Navbar = ({ DrawerList }) => {
   const navigate = useNavigate();
   const [open, setOpen] = React.useState(false);
-  const { notification, salon, auth } = useSelector((store) => store);
+  const notification = useSelector((store) => store.notification); // ✅ Específico
+  const salon = useSelector((store) => store.salon); // ✅ Específico
+  const auth = useSelector((store) => store.auth); // ✅ Específico
   const dispatch = useDispatch();
-
   const toggleDrawer = (newOpen) => () => {
     setOpen(newOpen);
   };

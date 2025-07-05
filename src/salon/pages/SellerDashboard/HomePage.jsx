@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 import EarningCharts from "./Chart/EarningCharts";
 import BookingCharts from "./Chart/BookingChart";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import {
   AccountBalanceWallet,
   CalendarToday,
@@ -25,7 +25,9 @@ import {
 } from "@mui/icons-material";
 
 const HomePage = () => {
+  
   const { booking, salon } = useSelector((store) => store);
+  const dispatch = useDispatch();
 
   // Datos de ejemplo para mostrar el potencial
   const mockStats = {
